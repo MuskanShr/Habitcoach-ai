@@ -1,20 +1,44 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import loginImage from "./assets/images.jpg";
+import { useMutation } from "@tanstack/react-query";
 
 function Login() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
+  const loginUser = async (user) => {
+    const response = await fetch("/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(user),
+    });
+
+    if (!response.ok) {
+      throw new Error("Login failed");
+    }
+
+    return response.json();
+  };
+
+  const loginMutation = useMutation({
+    mutationFn: loginUser,
+    onSuccess: (data) => {
+      alert("Login successful!");
+      console.log(data);
+    },
+    onError: (error) => {
+      alert(error.message);
+    },
+  });
 
   const handleLogin = (e) => {
     e.preventDefault();
 
-    if (!email.trim() || !password.trim()) {
+    if (!username.trim() || !password.trim()) {
       alert("Please fill all fields");
-      return;
-    }
-    if (!email.includes("@")) {
-      alert("Please enter a valid email.");
       return;
     }
     if (password.length < 6) {
@@ -22,31 +46,30 @@ function Login() {
       return;
     }
 
-    if (email === "admin@gmail.com" && password === "123456") {
-      alert("Login Successfull");
-    } else {
-      alert("Invalid Email or password");
-    }
+    loginMutation.mutate({
+      username,
+      password,
+    });
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-amber-100">
-      <div className="w-[900px] min-h-[500px] bg-white rounded-2xl flex overflow-hidden">
+      <div className="max-w-225 min-h-125 bg-white rounded-2xl flex overflow-hidden">
         <div className="w-1/2 p-20">
-          <h2 className="text-3xl font-bold text-red-900 mb-4 text-center">
+          <h2 className="text-3xl font-bold text-red-900 mb-5 text-center">
             Login
           </h2>
           <form onSubmit={handleLogin}>
             <input
-              className="w-full border rounded-lg px-4 py-3 mb-4"
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border rounded-lg px-4 py-3 mb-5"
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
 
             <input
-              className="w-full border rounded-lg px-4 py-3 mb-4"
+              className="w-full border rounded-lg px-4 py-3 mb-5"
               type="password"
               placeholder="Password"
               value={password}
@@ -55,12 +78,12 @@ function Login() {
 
             <button
               type="submit"
-              className="w-full bg-amber-800 text-amber-50 py-3 rounded-b-lg hover:bg-amber-600 transition mb-4"
+              className="w-full text-lg bg-amber-800 text-amber-50 py-3 rounded-lg hover:bg-amber-600 transition mb-4"
             >
               Login
             </button>
 
-            <p className="text-center">
+            <p className="text-center text-md">
               Don't have an account?{" "}
               <Link to="/register" className="text-blue-600">
                 Register
