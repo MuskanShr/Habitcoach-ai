@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import loginImage from "./assets/images.jpg";
 import { useMutation } from "@tanstack/react-query";
 
 function Login() {
+  const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -25,10 +27,16 @@ function Login() {
 
   const loginMutation = useMutation({
     mutationFn: loginUser,
+
     onSuccess: (data) => {
+      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("refreshToken", data.refreshToken);
+
       alert("Login successful!");
-      console.log(data);
+
+      navigate("/dashboard");
     },
+
     onError: (error) => {
       alert(error.message);
     },
