@@ -1,17 +1,52 @@
 import { useState } from "react";
-import { Link, UNSAFE_decodeViaTurboStream } from "react-router-dom";
+import { Link } from "react-router-dom";
 import RegisterImage from "./assets/images.jpg";
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
-  const [name, setName] = useState("");
+  const [username, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const registerUser = async (user) => {
+    const response = await fetch("/user/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(user),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+    return data;
+  };
+
+  const navigate = useNavigate();
+
+  const registerMutation = useMutation({
+    mutationFn: registerUser,
+
+    onSuccess: () => {
+      alert("Registration Successful!");
+      navigate("/");
+    },
+
+    onError: (error) => {
+      alert(error.message);
+    },
+  });
+
   const handleRegister = (e) => {
     e.preventDefault();
     if (
-      !name.trim() ||
+      !username.trim() ||
       !email.trim() ||
       !password.trim() ||
       !confirmPassword.trim()
@@ -20,8 +55,8 @@ function Register() {
       return;
     }
 
-    if (name.length < 3) {
-      alert("Name must be at least 3 characters.");
+    if (username.length < 3) {
+      alert("Username must be at least 3 characters.");
       return;
     }
 
@@ -40,10 +75,13 @@ function Register() {
       return;
     }
 
-    alert("Registered Successfully!");
+    registerMutation.mutate({
+      username,
+      password,
+    });
 
     console.log({
-      name,
+      username,
       email,
       password,
     });
@@ -58,9 +96,9 @@ function Register() {
             <input
               className="w-full border rounded-lg px-4 py-3 mb-5"
               type="text"
-              placeholder="Enter your full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your username"
+              value={username}
+              onChange={(e) => setUserName(e.target.value)}
             />
 
             <input
@@ -95,7 +133,7 @@ function Register() {
             </button>
             <p className="text-center text-md">
               Already have an account?
-              <Link to="/login" className="text-blue-600 ">
+              <Link to="/" className="text-blue-600 ">
                 {" "}
                 Login
               </Link>
