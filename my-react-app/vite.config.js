@@ -8,7 +8,12 @@ export default defineConfig({
   server: {
     proxy: {
       "/auth": {
-        target: "http://localhost:3000", // Your Express backend
+        target: "http://localhost:3000",
+        changeOrigin: true,
+      },
+
+      "/user": {
+        target: "http://localhost:3000",
         changeOrigin: true,
       },
     },
